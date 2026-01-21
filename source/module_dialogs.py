@@ -4734,8 +4734,6 @@ Still I am sorry that I'll leave you soon. You must promise me, you'll come visi
 
 
 [anyone, "start", [(is_between, "$g_talk_troop", companions_begin, companions_end),
-                   (this_or_next|eq, "$talk_context", tc_tavern_talk),
-                   (eq, "$talk_context", tc_court_talk),
                    (main_party_has_troop, "$g_talk_troop")],
 "Let's leave whenever you are ready.", "close_window", []],
 
@@ -27205,7 +27203,7 @@ I will use this to make amends to those you have wronged, and I will let it be k
 (is_between, "$g_talk_troop", pretenders_begin, pretenders_end),
 (neg|troop_slot_eq, "$g_talk_troop", slot_troop_playerparty_history, dplmc_pp_history_nonplayer_entry),
 
-(this_or_next|ge, "$g_disable_condescending_comments", 2),#allow same-sex marriage if "reduced prejudice" is enabled
+(this_or_next|eq, "$g_nohomo", 0),
 	(neq, reg65, "$character_gender"),
 (try_begin),
 	(troop_get_slot, ":original_faction", "$g_talk_troop", slot_troop_original_faction),
@@ -27223,7 +27221,7 @@ I will use this to make amends to those you have wronged, and I will let it be k
 (is_between, "$g_talk_troop", pretenders_begin, pretenders_end),
 (neg|troop_slot_eq, "$g_talk_troop", slot_troop_playerparty_history, dplmc_pp_history_nonplayer_entry),
 
-(this_or_next|ge, "$g_disable_condescending_comments", 2),#allow same-sex marriage if "reduced prejudice" is enabled
+(this_or_next|eq, "$g_nohomo", 0),
 	(neq, reg65, "$character_gender"),
 (try_begin),
 	(troop_get_slot, ":original_faction", "$g_talk_troop", slot_troop_original_faction),
@@ -27362,10 +27360,9 @@ I will use this to make amends to those you have wronged, and I will let it be k
    (assign, ":continue", 1),
    (assign, ":is_female", "$character_gender"),
    (try_begin),
-   #(neq, reg0, ":is_female"), #dckplmc
-       (eq, ":is_female", 1),
-       (lt, "$g_disable_condescending_comments", 2),#dckplmc
-       (assign, ":continue", 0),
+      (eq, ":is_female", 1),
+      (eq, "$g_nohomo", 1),
+      (assign, ":continue", 0),
    (try_end),
    (eq, ":continue", 1),
 
@@ -27500,7 +27497,7 @@ I will use this to make amends to those you have wronged, and I will let it be k
 "lord_marriage_proposal_female_pc_reax",[
 ]],
 
-[anyone|plyr,"lord_marriage_proposal_female_pc_confirm", [(ge, "$g_disable_condescending_comments", 2),#dckplmc
+[anyone|plyr,"lord_marriage_proposal_female_pc_confirm", [(eq, "$g_nohomo", 0),#dckplmc
 ],
 "No, isn't there anyone else in your family eligible for marriage?",
 "lord_marriage_proposal_female_female",[
@@ -27518,7 +27515,7 @@ I will use this to make amends to those you have wronged, and I will let it be k
    (try_begin),
    #(neq, reg0, ":is_female"), #dckplmc
        (eq, ":is_female", 1),
-       (lt, "$g_disable_condescending_comments", 2),#dckplmc
+       (eq, "$g_nohomo", 1),#dckplmc
        (assign, ":continue", 0),
    (try_end),
    (eq, ":continue", 1),
@@ -33934,7 +33931,8 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
 	#(eq, ":is_female", 0), #dplmc+ removed
 
 	(this_or_next|neq, reg65, "$character_gender"),
-		(ge, "$g_disable_condescending_comments", 2),
+    (eq, "$g_nohomo", 0),
+		
 	##diplomacy end+
     (troop_slot_eq, "$g_talk_troop", slot_troop_met, 1),
 	(troop_slot_eq, "$g_talk_troop", slot_troop_spouse, -1),
@@ -41661,7 +41659,7 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
   (try_end),
   ]],
 
-  [anyone|plyr,"mayor_investment_confirm",[], "No -- that's not economical for me at the moment.", "mayor_pretalk",[
+  [anyone|plyr,"mayor_investment_confirm",[], "No -- that's not economical for me at the moment.", "mayor_investment_advice",[
   ]],
 
   [anyone,"mayor_investment_purchase",[], "Very good. Your enterprise should be up and running in about a week. When next you come, and thereafter, you should speak to your {s4} about its operations.", "mayor_pretalk",[
@@ -44623,6 +44621,10 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
 ],
   "Sooner or later, friend. Victory will belong to us.", "close_window",[(assign, "$g_leave_encounter",1)]],
 
+ [anyone|plyr,"soldiers_interrogation",
+    [(check_quest_active, "qst_track_down_bandits"),
+    (neg|check_quest_succeeded, "qst_track_down_bandits"),
+ ], "I am hunting a group of bandits with the following description... Have you seen them?", "soldier_bandit_information",[]],
  [anyone|plyr,"soldiers_interrogation", [], "I am {playername}. Surrender or die.", "soldiers_interrogation_5",[(call_script, "script_encounter_agent_draw_weapon"),]],
  [anyone|plyr,"soldiers_interrogation", [], "I am {playername}. I am just passing through.", "soldiers_interrogation_4",[]],
 
@@ -44633,6 +44635,11 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
       (call_script, "script_make_kingdom_hostile_to_player", "$g_encountered_party_faction", -3),
       (encounter_attack),
  ]],
+
+[anyone,"soldier_bandit_information", [
+(call_script, "script_get_manhunt_information_to_s15", "qst_track_down_bandits"),
+], "{s15}", "soldiers_interrogation",[]],
+
 
 
 #SB : add in reinforcement encounter
